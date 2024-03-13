@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 import { SeederOptions } from 'typeorm-extension';
 
 dotenv.config();
-
+// Conexão com o banco de dados.
 export const dataSourceOptions: DataSourceOptions & SeederOptions = {
   type: 'postgres',
   host: process.env.TYPEORM_HOST,
