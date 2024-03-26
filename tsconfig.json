@@ -6,7 +6,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
+    "target": "es2017",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
@@ -16,6 +16,19 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@controllers/*": ["./src/controllers/*"],
+      "@dtos/*": ["./src/dtos/*"],
+      "@models/*": ["./src/models/*"],
+      "@api-doc/*": ["./src/api-doc/*"],
+      "@services/*": ["./src/services/*"],
+      "@utils/*": ["./src/utils/*"]
+    }
+  },
+  "include": [
+    "./src/**/*",
+    "migrations/**/*.ts"
+  ],
+  "exclude": ["dist", "node_modules", ".docker"]
 }
