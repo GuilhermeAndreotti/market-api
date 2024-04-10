@@ -1,9 +1,11 @@
-import { Controller, Get, HttpException, HttpStatus, Logger, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Logger, Post, Body, Param, Delete, Headers } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { ErrorDetailResponse } from '@api-doc/errorDetail.response';
 import { VehiclesService } from './vehicles.service';
-import { CreateVehicleDto } from '@dtos/create_agent_users.dto';
+import { CreateVehicleDto } from '@dtos/create-vehicle.dto';
 import { Vehicle } from '@models/vehicles.model';
+import { mlbFindVehicle } from '@dtos/mlb-find-vehicle.dto';
+import { mlbPostVehicle } from '@dtos/mlb-post-vehicle';
 
 @Controller('vehicles')
 @ApiTags('Vehicles')
@@ -68,4 +70,34 @@ export class VehiclesController {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Post('items/:itemId')
+  @ApiOperation({ summary: 'Find a vehicle on Mercado Livre' })
+  async getVehicleInformationFromMercadoLivre(@Body() mlbFindVehicle: mlbFindVehicle): Promise<any> {
+    try {
+      return await this.vehiclesService.getVehicle(mlbFindVehicle.itemId, mlbFindVehicle.authorization);
+    } catch (error) {
+      Logger.error(`${JSON.stringify(error)}`, 'Vehicles -> getVehicleInformationFromMercadoLivre');
+      if (error instanceof ErrorDetailResponse) {
+        throw new HttpException(error, +error.code);
+      }
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Post('items')
+  @ApiOperation({ summary: 'Publish a vehicle on Mercado Livre' })
+  async publishVehicleOnMercadoLivre(@Body() mlbFindVehicle: mlbPostVehicle): Promise<any> {
+    try {
+      return await this.vehiclesService.postAVehicleOnMercadoLivre(mlbFindVehicle.vehicleId, mlbFindVehicle.authorization);
+    } catch (error) {
+      Logger.error(`${JSON.stringify(error)}`, 'Vehicles -> publishVehicleOnMercadoLivre');
+      if (error instanceof ErrorDetailResponse) {
+        throw new HttpException(error, +error.code);
+      }
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
 }

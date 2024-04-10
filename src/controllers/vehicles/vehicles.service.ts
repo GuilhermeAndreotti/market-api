@@ -3,7 +3,9 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { v4 as uuidV4 } from 'uuid';
 import { Vehicle } from '@models/vehicles.model';
-import { CreateVehicleDto } from '@dtos/create_agent_users.dto';
+import { CreateVehicleDto } from '@dtos/create-vehicle.dto';
+import axios from 'axios';
+import { mountVehicleToMercadoLivre } from 'src/util/publishVehicle';
 
 @Injectable()
 export class VehiclesService {
@@ -38,7 +40,7 @@ export class VehiclesService {
         ...createVehicleDto,
       }); 
       newVehicle.vehicleId = uuidV4();
-
+  
       return await this.vehiclesRepository.save(newVehicle);
     } catch (error) {
       throw new Error(
@@ -46,6 +48,7 @@ export class VehiclesService {
       );
     }
   }
+  
 
   async deleteVehicle(vehicleId: string): Promise<{ status: number; message: string }> {
     try {
@@ -67,4 +70,44 @@ export class VehiclesService {
       );
     }
   }
+
+  async getVehicle(itemId: string, accessToken: string) {
+    try {
+      const response = await axios.get(`https://api.mercadolibre.com/items/${itemId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to fetch item: ${error.message}`);
+    }
+  }
+
+  async postAVehicleOnMercadoLivre(vehicleId: string, accessToken: string) {
+    try {
+      const vehicleToPost = await this.vehiclesRepository.findOne({
+          where: {
+            vehicleId: vehicleId
+          }
+      })
+
+      const mercadoLivreData = mountVehicleToMercadoLivre(vehicleToPost);
+      
+      const response = await axios.post(`https://api.mercadolibre.com/items`, mercadoLivreData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.log(error.response.data)
+      console.log(error.response.data.cause)
+      throw new Error(`Failed to fetch item: ${error.message}`);
+    }
+  }
+
 }

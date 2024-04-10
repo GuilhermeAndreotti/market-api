@@ -6,6 +6,8 @@ import { dataSourceOptions } from './data-source';
 import { Vehicle } from '@models/vehicles.model';
 import { VehiclesController } from '@controllers/vehicles/vehicles.controller';
 import { VehiclesService } from '@controllers/vehicles/vehicles.service';
+import { MercadoLivreController } from '@controllers/integration/mercadolivre.controller';
+import { MercadoLivre } from '@controllers/integration/mercadolivre.service';
 
 
 @Module({
@@ -15,7 +17,7 @@ import { VehiclesService } from '@controllers/vehicles/vehicles.service';
     TypeOrmModule.forFeature([Vehicle]),
     
   ],
-  controllers: [VehiclesController],
-  providers: [VehiclesService],
+  controllers: [VehiclesController, MercadoLivreController],
+  providers: [VehiclesService, MercadoLivre],
 })
 export class AppModule {}
