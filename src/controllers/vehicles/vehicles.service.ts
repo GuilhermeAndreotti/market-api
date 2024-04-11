@@ -6,6 +6,8 @@ import { Vehicle } from '@models/vehicles.model';
 import { CreateVehicleDto } from '@dtos/create-vehicle.dto';
 import axios from 'axios';
 import { mountVehicleToMercadoLivre } from 'src/util/publishVehicle';
+import { ErrorDetailResponse } from '@api-doc/errorDetail.response';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class VehiclesService {
@@ -46,6 +48,45 @@ export class VehiclesService {
       throw new Error(
         `Failed to create vehicle: ${error.message}`,
       );
+    }
+  }
+
+  public async updateVehicle(vehicleId: string, updateVehicleDto: CreateVehicleDto) {
+    try {
+      const vehicle = await this.vehiclesRepository.findOne({
+        where: {
+          vehicleId,
+        },
+      });
+
+      const update = plainToInstance(Vehicle, updateVehicleDto);
+
+      const { affected } = await this.vehiclesRepository.update(
+        vehicleId,
+        update,
+      );
+
+      return affected
+        ? {
+            code: HttpStatus.NO_CONTENT,
+            message: 'Veículo atualizado.',
+          }
+        : {
+            code: HttpStatus.NOT_FOUND,
+            message: 'Não foi possível localizar o veículo para a atualização',
+          };
+    } catch (error) {
+      if (error instanceof ErrorDetailResponse) {
+        throw error;
+      }
+
+      const e = new ErrorDetailResponse(
+        HttpStatus.EXPECTATION_FAILED,
+        error.name,
+        error.message,
+        'Vehicle -> updateVehicle',
+      );
+      throw e;
     }
   }
   
@@ -107,6 +148,44 @@ export class VehiclesService {
       console.log(error.response.data)
       console.log(error.response.data.cause)
       throw new Error(`Failed to fetch item: ${error.message}`);
+    }
+  }
+  
+  async deleteAVehicleOnMercadoLivre(itemId: string, accessToken: string) {
+    try {
+      const responseClose = await axios.put(
+        `https://api.mercadolibre.com/items/${itemId}`,
+        {
+          status: 'closed'
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log('Status do item atualizado:', responseClose.data);
+      
+      const responseDelete = await axios.put(
+        `https://api.mercadolibre.com/items/${itemId}`,
+        {
+          deleted: true
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          }
+        }
+      );
+
+      console.log('Sua publicação foi deletada com sucesso.');
+
+    } catch (error) {
+      console.error('Erro ao atualizar o status do item:', error.response.data);
     }
   }
 

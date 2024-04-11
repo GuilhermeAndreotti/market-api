@@ -1,5 +1,5 @@
-import { Controller, Get, HttpException, HttpStatus, Logger, Post, Body, Param, Delete, Headers } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
+import { Controller, Get, HttpException, HttpStatus, Logger, Post, Body, Param, Delete, Headers, Patch, ParseUUIDPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { ErrorDetailResponse } from '@api-doc/errorDetail.response';
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from '@dtos/create-vehicle.dto';
@@ -85,7 +85,26 @@ export class VehiclesController {
     }
   }
 
+  @Patch(':vehicleId')
+  @ApiOperation({ summary: 'Update Vehicle by id' })
+  async updateVehicle(
+    @Param('vehicleId', ParseUUIDPipe) vehicleId: string,
+    @Body() updateDto: CreateVehicleDto
+  ) {
+    try {
+      const updated = await this.vehiclesService.updateVehicle(vehicleId, updateDto)
+      return updated;
+    } catch (error) {
+      Logger.error(`${JSON.stringify(error)}`, 'Vehicles -> updateVehicle');
+      if (error instanceof ErrorDetailResponse) {
+        throw new HttpException(error, +error.code);
+      }
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @Post('items')
+  @ApiOkResponse({ description: 'Vehicle published successfully' })
   @ApiOperation({ summary: 'Publish a vehicle on Mercado Livre' })
   async publishVehicleOnMercadoLivre(@Body() mlbFindVehicle: mlbPostVehicle): Promise<any> {
     try {
@@ -98,6 +117,23 @@ export class VehiclesController {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+@Post('delete/items/:itemId')
+@ApiOperation({ summary: 'Delete a vehicle from Mercado Livre' })
+@ApiOkResponse({ description: 'Vehicle deleted successfully' })
+async deleteVehicleOnMercadoLivre(
+  @Body() mlbDeleteVehicle: mlbFindVehicle
+): Promise<any> {
+  try {
+    return await this.vehiclesService.deleteAVehicleOnMercadoLivre(mlbDeleteVehicle.itemId, mlbDeleteVehicle.authorization);
+  } catch (error) {
+    Logger.error(`${JSON.stringify(error)}`, 'Vehicles -> deleteVehicleOnMercadoLivre');
+    if (error instanceof ErrorDetailResponse) {
+      throw new HttpException(error, +error.code);
+    }
+    throw new HttpException(error, HttpStatus.BAD_REQUEST);
+  }
+}
 
 
 }

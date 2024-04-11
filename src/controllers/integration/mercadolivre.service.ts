@@ -19,6 +19,7 @@ export class MercadoLivre {
       return response.data; // Retorna apenas o corpo da resposta
   
     } catch (error) {
+      console.log(error)
       throw new Error(`Failed to fetch token: ${error.message}`);
     }
   }
