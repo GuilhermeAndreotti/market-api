@@ -8,30 +8,43 @@ import axios from 'axios';
 import { mountVehicleToMercadoLivre } from 'src/util/publishVehicle';
 import { ErrorDetailResponse } from '@api-doc/errorDetail.response';
 import { plainToInstance } from 'class-transformer';
+import { UpdateAndPostVehicle } from '@dtos/update-vehicle-and-post.dto';
+import { DeleteVehicleDto } from '@dtos/delete-vehicle.dto';
+import { UpdateVehicleDto } from '@dtos/update-vehicle.dto';
+import { mountVehicleToMercadoLivreToEdit } from 'src/util/editVehicle';
+import { AdminService } from '@controllers/admin/admin.service';
+import { mlbAnswerQuestion } from '@dtos/mlb-answer-question.dto';
 
 @Injectable()
 export class VehiclesService {
   constructor(
     @InjectRepository(Vehicle)
     private vehiclesRepository: Repository<Vehicle>,
+    private readonly adminService: AdminService,
   ) {}
 
   async findAllVehicles(): Promise<Vehicle[]> {
     try {
       return await this.vehiclesRepository.find();
     } catch (error) {
-      throw new Error(
-        `Failed to fetch vehicles: ${error.message}`,
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `Failed to find all vehicles`,
+        '',
+        'VehicleService -> findAllVehicles',
       );
     }
   }
 
   async findVehicleById(vehicleId: string): Promise<Vehicle> {
     try {
-      return await this.vehiclesRepository.findOne({where: { vehicleId }});
+      return await this.vehiclesRepository.findOne({ where: { vehicleId } });
     } catch (error) {
-      throw new Error(
-        `Failed to find vehicle with ID ${vehicleId}: ${error.message}`,
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `Failed to find vehicle by id`,
+        '',
+        'VehicleService -> findVehicleById',
       );
     }
   }
@@ -40,25 +53,26 @@ export class VehiclesService {
     try {
       const newVehicle = this.vehiclesRepository.create({
         ...createVehicleDto,
-      }); 
+      });
       newVehicle.vehicleId = uuidV4();
-  
+
       return await this.vehiclesRepository.save(newVehicle);
     } catch (error) {
-      throw new Error(
-        `Failed to create vehicle: ${error.message}`,
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `Failed to create vehicle`,
+        '',
+        'VehicleService -> createVehicle',
       );
     }
   }
 
-  public async updateVehicle(vehicleId: string, updateVehicleDto: CreateVehicleDto) {
+  public async updateVehicle(
+    vehicleId: string,
+    updateVehicleDto: CreateVehicleDto,
+  ) {
     try {
-      const vehicle = await this.vehiclesRepository.findOne({
-        where: {
-          vehicleId,
-        },
-      });
-
+      delete updateVehicleDto.published;
       const update = plainToInstance(Vehicle, updateVehicleDto);
 
       const { affected } = await this.vehiclesRepository.update(
@@ -68,32 +82,35 @@ export class VehiclesService {
 
       return affected
         ? {
-            code: HttpStatus.NO_CONTENT,
-            message: 'Veículo atualizado.',
+            code: HttpStatus.OK,
+            message: 'Veículo atualizado com sucesso.',
           }
         : {
             code: HttpStatus.NOT_FOUND,
             message: 'Não foi possível localizar o veículo para a atualização',
           };
     } catch (error) {
-      if (error instanceof ErrorDetailResponse) {
-        throw error;
-      }
-
-      const e = new ErrorDetailResponse(
-        HttpStatus.EXPECTATION_FAILED,
-        error.name,
-        error.message,
-        'Vehicle -> updateVehicle',
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `Failed to update vehicle.`,
+        '',
+        'VehicleService -> updateVehicle',
       );
-      throw e;
     }
   }
-  
 
-  async deleteVehicle(vehicleId: string): Promise<{ status: number; message: string }> {
+  async deleteVehicle(
+    deleteVehicleDto: DeleteVehicleDto,
+  ): Promise<{ status: number; message: string }> {
     try {
-      const result = await this.vehiclesRepository.delete(vehicleId);
+      const vehicleToDelete = await this.vehiclesRepository.findOne({
+        where: {
+          vehicleId: deleteVehicleDto.vehicleId,
+        },
+      });
+      const result = await this.vehiclesRepository.delete(
+        deleteVehicleDto.vehicleId,
+      );
       if (result.affected > 0) {
         return {
           status: HttpStatus.OK,
@@ -106,87 +123,289 @@ export class VehiclesService {
         };
       }
     } catch (error) {
-      throw new Error(
-        `Failed to delete vehicle: ${error.message}`,
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `Failed to delete item`,
+        '',
+        'VehicleService -> deleteVehicle',
       );
     }
   }
 
-  async getVehicle(itemId: string, accessToken: string) {
+  async getVehicle(itemId: string) {
     try {
-      const response = await axios.get(`https://api.mercadolibre.com/items/${itemId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
+      const accessToken = await this.adminService.getAuthMercadoLivre();
+      const response = await axios.get(
+        `https://api.mercadolibre.com/items/${itemId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
       console.log(response);
       return response.data;
     } catch (error) {
-      throw new Error(`Failed to fetch item: ${error.message}`);
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `Failed to fetch item`,
+        '',
+        'VehicleService -> getVehicle',
+      );
     }
   }
 
-  async postAVehicleOnMercadoLivre(vehicleId: string, accessToken: string) {
+  async postAVehicleOnMercadoLivre(vehicleId: string) {
     try {
-      const vehicleToPost = await this.vehiclesRepository.findOne({
-          where: {
-            vehicleId: vehicleId
-          }
-      })
+      const token = await this.adminService.getAuthMercadoLivre();
 
-      const mercadoLivreData = mountVehicleToMercadoLivre(vehicleToPost);
-      
-      const response = await axios.post(`https://api.mercadolibre.com/items`, mercadoLivreData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+      const vehicle = await this.vehiclesRepository.findOne({
+        where: {
+          vehicleId: vehicleId,
         },
       });
 
-      return response.data;
+      const publishedVehicle = await this.vehiclesRepository.findOne({
+        where: {
+          published: true,
+        },
+      });
+
+      if (publishedVehicle) {
+        throw new ErrorDetailResponse(
+          HttpStatus.FORBIDDEN,
+          'Está versão só aceita um anúncio. Por favor, remova a publicação anterior para publicar esta nova.',
+          '',
+          'VehicleService -> deleteAVehicleOnMercadoLivre',
+        );
+      }
+
+      const mercadoLivreData = mountVehicleToMercadoLivre(vehicle);
+
+      try {
+        const response = await axios.post(
+          `https://api.mercadolibre.com/items`,
+          mercadoLivreData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+        const { affected } = await this.vehiclesRepository.update(vehicleId, {
+          permalink: response.data.permalink,
+          published: true,
+          itemId: response.data.id,
+        });
+
+        try {
+          const resp = await axios.post(
+            `https://api.mercadolibre.com/items/${response.data.id}/description`,
+            {
+              plain_text: vehicle.description,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            },
+          );
+        } catch (error) {
+          throw 'Erro ao adicionar descrição';
+        }
+
+        return { status: response.status, url: response.data.permalink };
+      } catch (error) {
+        throw error;
+      }
     } catch (error) {
-      console.log(error.response.data)
-      console.log(error.response.data.cause)
-      throw new Error(`Failed to fetch item: ${error.message}`);
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `${error?.response?.data?.cause[0].message ?? error.message}`,
+        '',
+        'VehicleService -> postAVehicleOnMercadoLivre',
+      );
     }
   }
-  
-  async deleteAVehicleOnMercadoLivre(itemId: string, accessToken: string) {
+
+  async updateAVehicleOnMercadoLivre(vehicleId: string) {
     try {
-      const responseClose = await axios.put(
-        `https://api.mercadolibre.com/items/${itemId}`,
+      const accessToken = await this.adminService.getAuthMercadoLivre();
+
+      const vehicle = await this.vehiclesRepository.findOne({
+        where: {
+          vehicleId: vehicleId,
+        },
+      });
+
+      const mercadoLivreData = mountVehicleToMercadoLivreToEdit(vehicle);
+
+      try {
+        const response = await axios.put(
+          `https://api.mercadolibre.com/items/${vehicle.itemId}`,
+          mercadoLivreData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+        return { status: response.status };
+      } catch (error) {
+        throw error;
+      }
+    } catch (error) {
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        `Failed to fetch item: ${error.response.data.cause[0].message}`,
+        '',
+        'VehicleService -> updateAVehicleOnMercadoLivre',
+      );
+    }
+  }
+
+  async deleteAVehicleOnMercadoLivre(
+    itemId: string,
+    deleting: string,
+    vehicleId: string,
+  ) {
+    try {
+      const accessToken = await this.adminService.getAuthMercadoLivre();
+
+      const vehicle = await this.vehiclesRepository.findOne({
+        where: {
+          vehicleId: vehicleId,
+        },
+      });
+
+      if (!vehicle) {
+        throw new ErrorDetailResponse(
+          HttpStatus.NOT_FOUND,
+          'Vehicle not found',
+          '',
+          'VehicleService -> deleteAVehicleOnMercadoLivre',
+        );
+      }
+      if (deleting === 'all' || deleting === 'publish-only') {
+        if (vehicle.published && vehicle.itemId) {
+          await this.vehiclesRepository.update(vehicleId, {
+            published: false,
+            permalink: undefined,
+            itemId: undefined,
+          });
+          await axios.put(
+            `https://api.mercadolibre.com/items/${vehicle.itemId}`,
+            { status: 'closed' },
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+              },
+            },
+          );
+
+          const responseDelete = await axios.put(
+            `https://api.mercadolibre.com/items/${vehicle.itemId}`,
+            { deleted: 'true' },
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+              },
+            },
+          );
+
+          console.log(responseDelete.data);
+        }
+      }
+      if (deleting === 'car-only' || deleting === 'all') {
+        await this.vehiclesRepository.delete(vehicle.vehicleId);
+      }
+    } catch (error) {
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        'Failed to delete item',
+        error.message,
+        'VehicleService -> deleteAVehicleOnMercadoLivre',
+      );
+    }
+  }
+
+  async checkQuestions(vehicleId: string) {
+    try {
+      const vehicle = await this.vehiclesRepository.findOne({
+        where: {
+          vehicleId,
+        },
+      });
+
+      const accessToken = await this.adminService.getAuthMercadoLivre();
+
+      const response = await axios.get(
+        `https://api.mercadolibre.com/questions/search?item_id=${vehicle.itemId}`,
         {
-          status: 'closed'
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      const questions = response.data.questions;
+
+      const sortedQuestions = questions.sort((a, b) => {
+        const dateA: any = new Date(a.date_created);
+        const dateB: any = new Date(b.date_created);
+        return dateB - dateA;
+      });
+
+      const lastFiveQuestions = sortedQuestions.slice(0, 5).map((question) => ({
+        questionId: question.id,
+        status: question.status,
+        text: question.text,
+        answer: question?.answer?.text || undefined,
+      }));
+
+      return lastFiveQuestions;
+    } catch (error) {
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        'Failed to check item questions',
+        error.message,
+        'VehicleService -> checkQuestions',
+      );
+    }
+  }
+
+  async answerQuestion(answerDto: mlbAnswerQuestion) {
+    try {
+      const accessToken = await this.adminService.getAuthMercadoLivre();
+      const response = await axios.post(
+        'https://api.mercadolibre.com/answers',
+        {
+          question_id: answerDto.questionId,
+          text: answerDto.answer,
         },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
-      );
-
-      console.log('Status do item atualizado:', responseClose.data);
-      
-      const responseDelete = await axios.put(
-        `https://api.mercadolibre.com/items/${itemId}`,
-        {
-          deleted: true
         },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
-          }
-        }
       );
-
-      console.log('Sua publicação foi deletada com sucesso.');
-
+      console.log(response);
+      return true;
     } catch (error) {
-      console.error('Erro ao atualizar o status do item:', error.response.data);
+      throw new ErrorDetailResponse(
+        HttpStatus.BAD_REQUEST,
+        'Failed to answer item questions',
+        error.message,
+        'VehicleService -> answerQuestion',
+      );
     }
   }
-
 }

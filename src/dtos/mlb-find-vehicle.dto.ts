@@ -1,14 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class mlbFindVehicle {
   
   @IsString({ message: 'The field "itemId" must be a string.' })
   @ApiProperty()
-  itemId: string;
+  itemId?: string;
 
   @IsString({ message: 'The field "authorization" must be a string.' })
+  @IsOptional()
   @ApiProperty()
-  authorization: string;
+  vehicleId?: string;
+
+  @IsString({ message: 'The field "deleting" must be a string.' })
+  @IsOptional()
+  @ApiProperty()
+  deleting?: string;
 
 }

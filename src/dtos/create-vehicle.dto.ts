@@ -1,5 +1,5 @@
-import { IsNumber, IsString, isNumber } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean, IsNumber, IsOptional, IsString, isNumber } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateVehicleDto {
   @IsString({ message: 'The field "title" must be a string.' })
@@ -10,25 +10,32 @@ export class CreateVehicleDto {
   @ApiProperty()
   description: string;
 
+  @IsString({ message: 'The field "contactSchedule" must be a string.' })
+  @ApiProperty()
+  contactSchedule: string;
+
+  @IsBoolean()
+  @ApiProperty()
+  @IsOptional()
+  published?: boolean;
+
   @IsNumber()
   @ApiProperty()
   price: number;
 
-  @IsString({ message: 'The field "image1" must be a string.' })
   @ApiProperty()
   image1: string;
 
-  @IsString({ message: 'The field "image2" must be a string.' })
   @ApiProperty()
   image2: string;
 
-  @IsString({ message: 'The field "image3" must be a string.' })
-  @ApiProperty()
-  image3: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  image3?: string;
 
-  @IsString({ message: 'The field "image4" must be a string.' })
-  @ApiProperty()
-  image4: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  image4?: string;
 
   @IsString({ message: 'The field "brand" must be a string.' })
   @ApiProperty()

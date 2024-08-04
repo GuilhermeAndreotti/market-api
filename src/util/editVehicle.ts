@@ -1,9 +1,8 @@
 import { Vehicle } from "@models/vehicles.model";
 
-export const mountVehicleToMercadoLivre = (vehicle: Vehicle) => {
+export const mountVehicleToMercadoLivreToEdit = (vehicle: Vehicle) => {
     return {
         title: String(vehicle.title),
-        channels: ["marketplace"],
         pictures: [
             {
                 source: String(vehicle.image1)
@@ -18,19 +17,12 @@ export const mountVehicleToMercadoLivre = (vehicle: Vehicle) => {
                 source: String(vehicle.image4 ?? undefined)
             },       
         ],
-        category_id: "MLB1744",
         price: String(vehicle.price),
-        currency_id: "BRL",
-        listing_type_id: "free",
-        available_quantity: "1",
         // location: {
         //     address_line: "Avenida Juruce, 436",
         //     zip_code: "04080011",
         //     city: { id: "BR-SP-56" }
         // },
-        location: {
-            city: { id: "BR-SP-56" }
-        },
         attributes: [
             { id: "BRAND", value_name: String(vehicle.brand) },
             { id: "MODEL", value_name: String(vehicle.model) },

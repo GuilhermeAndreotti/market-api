@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
-export class mlbPostVehicle {
+export class DeleteVehicleDto {
   
   @IsString({ message: 'The field "vehicleId" must be a string.' })
   @ApiProperty()

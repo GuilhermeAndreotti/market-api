@@ -14,6 +14,15 @@ export class Vehicle {
   @Column({ type: 'int', precision: 10, scale: 2, nullable: true })
   price: number;
 
+  @Column({ nullable: true, name: 'contact_schedule' })
+  contactSchedule: string;
+
+  @Column({ nullable: true, name: 'item_id' })
+  itemId?: string;
+
+  @Column({ type: 'boolean', default: false, nullable: true })
+  published: boolean;
+
   @Column({ type: 'varchar', nullable: true })
   image1: string;
 
@@ -73,6 +82,9 @@ export class Vehicle {
 
   @Column({ type: 'varchar', nullable: true, name: 'has_amfm_radio' })
   hasAmfmRadio: string;
+
+  @Column({ type: 'varchar', nullable: true, name: 'permalink' })
+  permalink: string;
 
   @Column({ type: 'varchar', nullable: true, name: 'has_auxiliary_port' })
   hasAuxiliaryPort: string;
