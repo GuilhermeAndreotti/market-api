@@ -110,7 +110,11 @@ export class Vehicle {
   @Column({ type: 'varchar', nullable: true, name: 'has_usb' })
   hasUsb: string;
 
-  @Column({ type: 'varchar', nullable: true, name: 'has_steering_wheel_control' })
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    name: 'has_steering_wheel_control',
+  })
   hasSteeringWheelControl: string;
 
   @Column({ type: 'varchar', nullable: true, name: 'has_power_door_locks' })
@@ -122,7 +126,11 @@ export class Vehicle {
   @Column({ type: 'varchar', nullable: true, name: 'has_rain_sensor' })
   hasRainSensor: string;
 
-  @Column({ type: 'varchar', nullable: true, name: 'has_height_adjustable_driver_seat' })
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    name: 'has_height_adjustable_driver_seat',
+  })
   hasHeightAdjustableDriverSeat: string;
 
   @Column({ type: 'varchar', nullable: true, name: 'has_rear_foglights' })
