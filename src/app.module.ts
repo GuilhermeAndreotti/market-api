@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,14 +13,12 @@ import { Admin } from '@models/admin.model';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SendEmailsService } from '@controllers/emails/sendEmails.service';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(dataSourceOptions),
     TypeOrmModule.forFeature([Vehicle, Admin]),
-    ScheduleModule.forRoot()
-    
+    ScheduleModule.forRoot(),
   ],
   controllers: [VehiclesController, MercadoLivreController, AdminController],
   providers: [VehiclesService, MercadoLivre, AdminService, SendEmailsService],
