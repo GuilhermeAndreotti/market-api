@@ -1,9 +1,16 @@
 import { ErrorDetailResponse } from '@api-doc/errorDetail.response';
-import { Controller, Get, HttpException, HttpStatus, Logger, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  HttpException,
+  HttpStatus,
+  Logger,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MercadoLivre } from './mercadolivre.service';
 
-@Controller('/') 
+@Controller('/')
 @ApiTags('Integration')
 export class MercadoLivreController {
   constructor(private readonly mercadoLivreService: MercadoLivre) {}

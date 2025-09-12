@@ -8,7 +8,6 @@ import {
   Body,
   Param,
   Delete,
-  Headers,
   Patch,
   ParseUUIDPipe,
 } from '@nestjs/common';
@@ -25,7 +24,6 @@ import { CreateVehicleDto } from '@dtos/create-vehicle.dto';
 import { Vehicle } from '@models/vehicles.model';
 import { mlbFindVehicle } from '@dtos/mlb-find-vehicle.dto';
 import { mlbPostVehicle } from '@dtos/mlb-post-vehicle';
-import { UpdateAndPostVehicle } from '@dtos/update-vehicle-and-post.dto';
 import { DeleteVehicleDto } from '@dtos/delete-vehicle.dto';
 import { mlbAnswerQuestion } from '@dtos/mlb-answer-question.dto';
 

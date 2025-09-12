@@ -1,8 +1,8 @@
 import { Admin } from '@models/admin.model';
-import { Injectable, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
-import { IsNull, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MercadoLivre {
@@ -29,7 +29,7 @@ export class MercadoLivre {
       });
       await this.adminRepository.update(admin.adminId, {
         accessToken: response.data.access_token,
-        accessCode: response.data.refresh_token
+        accessCode: response.data.refresh_token,
       });
 
       return true;
