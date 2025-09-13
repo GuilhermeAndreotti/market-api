@@ -2,7 +2,7 @@
 
 ## Sobre o projeto
 
-Este trabalho tem como objetivo apresentar um protótipo funcional de um sistema web, nesse caso, a parte da API, utilizando o framework NestJS, em Typescript. O sistema se comunica com a API do Mercado Livre para realizar suas funções, como o controle de vendas e a capacidade de publicar os produtos cadastrados, no escopo desse projeto, veículos, no marketplace em questão. 
+Esse trabalho representa a API de um protótipo funcional de um sistema web que tem como objetivo intregar-se com API do Mercado Livre para publicar veículos, o escopo escolhido para o projeto. Foi utilizado o framework NESTJS para o desenvolvimento devido a conhecimento posteriores e sua capacidade de separar em módulos cada parte do sistema.
 
 O Diagrama abaixo demonstra brevemente essa comunicação:
 
