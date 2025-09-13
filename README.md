@@ -35,7 +35,7 @@ A publicação é feita em postAVehicleOnMercadoLivre, onde busca o veículo no 
 
 ## Instalação
 
-Rode yarn para instalar as dependências, se não tiver o yarn:
+Rode yarn para instalar as dependências, se não tiver o yarn, rode o primeiro comando antes:
 
 ```bash
 npm install --global yarn
