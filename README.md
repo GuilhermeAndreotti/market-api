@@ -4,10 +4,10 @@
 
 Esse trabalho representa a API de um protótipo funcional de um sistema web que tem como objetivo intregar-se com API do Mercado Livre para publicar veículos, o escopo escolhido para o projeto. Foi utilizado o framework NESTJS para o desenvolvimento devido a conhecimento posteriores e sua capacidade de separar em módulos cada parte do sistema.
 
-O Diagrama abaixo demonstra brevemente essa comunicação:
+O Diagrama abaixo demonstra brevemente o funcionamento da API e a comunicação com o Mercado Livre:
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/d2f6e90b-a8f6-4b6b-98d3-70e1693c3429" alt="image" width="629" height="734" />
+ <img width="367" height="427" alt="image" src="https://github.com/user-attachments/assets/3e56a536-7215-4ac5-abd4-f127b07e1903" />
 </div>
 
 # Integração:
