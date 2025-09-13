@@ -5,7 +5,10 @@
 Este trabalho tem como objetivo apresentar um protótipo funcional de um sistema web, nesse caso, a parte da API, utilizando o framework NestJS, em Typescript. O sistema se comunica com a API do Mercado Livre para realizar suas funções, como o controle de vendas e a capacidade de publicar os produtos cadastrados, no escopo desse projeto, veículos, no marketplace em questão. 
 
 O Diagrama abaixo demonstra brevemente essa comunicação:
-<img width="629" height="734" alt="image" src="https://github.com/user-attachments/assets/d2f6e90b-a8f6-4b6b-98d3-70e1693c3429" />
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/d2f6e90b-a8f6-4b6b-98d3-70e1693c3429" alt="image" width="629" height="734" />
+</div>
 
 # Integração:
 
@@ -75,6 +78,14 @@ TYPEORM_USERNAME=postgres
 TYPEORM_PASSWORD=minha_senha
 TYPEORM_DATABASE=meu_banco
 ```
+
+Após a conexão com o banco, execute:
+
+```bash
+yarn migration:run
+```
+
+Isso executará as migrations do projeto para criar as tabelas do banco;
 
 ## Rodar o projeto
 
