@@ -108,7 +108,7 @@ Postgres: 16.10
 
 # Documentaçôes utilizadas
 
-https://docs.nestjs.com/
-https://www.postgresql.org/download/linux/ubuntu/
-https://developers.mercadolivre.com.br/pt_br/guia-para-produtos
-https://developers.mercadolivre.com.br/pt_br/publicacao-de-automoveis
+- https://docs.nestjs.com/
+- https://www.postgresql.org/download/linux/ubuntu/
+- https://developers.mercadolivre.com.br/pt_br/guia-para-produtos
+- https://developers.mercadolivre.com.br/pt_br/publicacao-de-automoveis
